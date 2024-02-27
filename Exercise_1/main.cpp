@@ -25,114 +25,117 @@ int main()
     arr_is_sorted_assert();
     binary_search_assert();
     interpolation_search_assert();
-    // sosert_buble();
+    find_closest_assert();
+    selectionSortIterative_assert();
+    selectionSortRecursive_assert();
 
     // Работа для построения графика времени работы посиковых функций
     {
-        long long bigSize = 1000;
-        double element = 1000; // возможно попадется
+        size_t bigSize = 100;
 
-        int elapsedMilliSeconds = 0;
         int elapsedMilliSeconds1 = 0;
-        int elapsedMilliSeconds0 = 0;
         int elapsedMilliSeconds2 = 0;
-        int elapsedMilliSeconds3 = 0;
+        int element = 0;
 
-        // сделать ссумарным 100 раз поиск элемента также для бинарного и ииии...
-        for (int j = 0; bigSize < 10000000; j++)
+        for (int j = 0; bigSize < 100000000000; j++) // ну пока не переполним...
         {
-
-            double *a = new double[bigSize];
-            for (size_t t = 0; t < bigSize; t++)
-            {
-                a[t] = t;
-            } // Делаем насильственно последовательным
+            int *a = new int[bigSize];
+            // for (size_t t = 0; t < bigSize; t++)
+            // {
+            //     a[t] = t;
+            // } // Делаем насильственно последовательным
 
             cout << "size = " << bigSize << endl;
-            for (int i = 0; i < 100; i++)
+            rand_fill_array(a, bigSize, 1000000, 1);
+
+            // померяли рекурсию
+            auto begin1 = steady_clock::now();
+            for (int i = 0; i < 1; i++)
             {
-                auto begin1 = steady_clock::now();
-                interpolation_search(a, bigSize, element);
-                auto end1 = steady_clock::now();
-                elapsedMilliSeconds1 += duration_cast<milliseconds>(end1 - begin1).count(); // сумарно 100 раз
-
-                auto begin2 = steady_clock::now();
-                binary_search(a, bigSize, element);
-                auto end2 = steady_clock::now();
-                elapsedMilliSeconds2 += duration_cast<milliseconds>(end2 - begin2).count(); // сумарно 100 раз
-
-                auto begin3 = steady_clock::now();
-                sequential_search(a, bigSize, element);
-                auto end3 = steady_clock::now();
-                elapsedMilliSeconds3 += duration_cast<milliseconds>(end3 - begin3).count(); // сумарно 100 раз
+                selectionSortRecursive(a, bigSize);
             }
-            bigSize *= 10;
-            cout << "Time elapsed(in milliseconds) for Creating Random Array: " << elapsedMilliSeconds0 << endl; // сколько заняло секунд
-            cout << "Time elapsed(in milliseconds) for Interpolation Search: " << elapsedMilliSeconds1 << endl;  // сколько заняло секунд
-            cout << "Time elapsed(in milliseconds) for Binary Search: " << elapsedMilliSeconds1 << endl;         // сколько заняло секунд
-            cout << "Time elapsed(in milliseconds) for Sequential Search: " << elapsedMilliSeconds1 << endl;     // сколько заняло секунд
-            // bigSize *= 10;
+            auto end1 = steady_clock::now();
+            elapsedMilliSeconds1 = duration_cast<milliseconds>(end1 - begin1).count();
+
+            // // померяли итерациями
+            // auto begin2 = steady_clock::now();
+            // for (int i = 0; i < 1; i++)
+            // {
+            //     selectionSortIterative(a, bigSize);
+            // }
+            // auto end2 = steady_clock::now();
+            // elapsedMilliSeconds2 = duration_cast<milliseconds>(end2 - begin2).count();
+
+
+            if (bigSize >= 10000) // если размер достиг это, то добавляем уже чуть чуть поменьше
+                bigSize += bigSize * 0.2;
+            else
+                bigSize *= 10;
+                         // сколько заняло миллисекунд n итераций/n итераций = 1 итерация // 
+            cout << "Time elapsed(in milliseconds) for Recursive sort: " << elapsedMilliSeconds1 / 1 << endl;    
+            // cout << "Time elapsed(in milliseconds) for Iterative sort: " << elapsedMilliSeconds2 / 1 << endl;        
         }
-
-        // size_t size = 1000;
-        // auto begin = steady_clock::now();
-        // auto end = steady_clock::now();
-
-        // for (size_t k = 0; k < 10000000; k++)
-        // {
-        //     cout << "Arr size is " << size << endl;
-        //     double *arr = new double[size];
-        //     rand_fill_array(arr, size, 100.0, 1.0);
-        //     sort_buble(arr, size); // сортируем
-        //     int time;
-        //     double key = 5.24;     // ну предположим
-        //     int iterations = 100;
-
-        //     auto begin = steady_clock::now();
-        //     for (size_t i = 0; i < iterations; i++) {
-        //         sequential_search(arr, size, key);
-        //     }
-        //     auto end = steady_clock::now();
-        //     time = duration_cast<milliseconds>(end-begin).count();
-        //     cout << "Elapsed time in milliseconds: " << time/iterations << endl;
-        //     size *= 10;
-
-        // // поиск последовательно
-        // begin = steady_clock::now();
-        // for (int y = 0; y < iterations; y++)
-        // {
-        //     sequential_search(arr, size, key);
-        // }
-        // end = steady_clock::now();
-        // auto elapsedMilliSeconds = duration_cast<milliseconds>(end - begin).count() / iterations;
-        // cout << "Time elapsed for sequential searching an element " << key << " in array with size of " << size << " is " << elapsedMilliSeconds << " in Milliseconds " << endl;
-
-        // cout << "================================================" << endl;
-        // // поиск бинарно
-        // begin = steady_clock::now();
-        // for (int y = 0; y < iterations; y++)
-        // {
-        //     binary_search(arr, size, key);
-        // }
-        // end = steady_clock::now();
-        // elapsedMilliSeconds = duration_cast<milliseconds>(end - begin).count() / iterations;
-        // cout << "Time elapsed for binary searching an element " << key << " in array with size of " << size << " is " << elapsedMilliSeconds << " in Milliseconds " << endl;
-
-        // cout << "================================================" << endl;
-        // // поиск интерполяционно
-        // begin = steady_clock::now();
-        // for (int y = 0; y < iterations; y++)
-        // {
-        //     interpolation_search(arr, size, key);
-        // }
-        // end = steady_clock::now();
-        // elapsedMilliSeconds = duration_cast<milliseconds>(end - begin).count() / iterations;
-        // cout << "Time elapsed for binary searching an element " << key << " in array with size of " << size << " is " << elapsedMilliSeconds << " in Milliseconds " << endl;
-
-        // size *= 10;
-        // cout << "Size was multiplied by 10" << endl;
-        // cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
-        //}
     }
+
+    // // Работа для построения графика времени работы посиковых функций
+    // {
+    //     size_t bigSize = 100000000;
+
+    //     int elapsedMilliSeconds1 = 0;
+    //     int elapsedMilliSeconds2 = 0;
+    //     int elapsedMilliSeconds3 = 0;
+    //     int element = 0;
+
+    //     for (int j = 0; bigSize < 100000000000; j++) // ну пока не переполним...
+    //     {
+    //         int *a = new int[bigSize];
+    //         // for (size_t t = 0; t < bigSize; t++)
+    //         // {
+    //         //     a[t] = t;
+    //         // } // Делаем насильственно последовательным
+
+    //         cout << "size = " << bigSize << endl;
+    //         rand_fill_array(a, bigSize, 1000000, 1);
+
+    //                         // померяли последовательно
+    //         auto begin1 = steady_clock::now();
+    //         for (int i = 0; i < 5; i++)
+    //         {
+    //             element = (int)rand() / RAND_MAX * 10000 + 1; // возможно попадется
+    //             sequential_search(a, bigSize, element);
+    //         }
+    //         auto end1 = steady_clock::now();
+    //         elapsedMilliSeconds1 = duration_cast<milliseconds>(end1 - begin1).count();
+
+    //                        // померяли бинарный
+    //         auto begin2 = steady_clock::now();
+    //         for (int i = 0; i < 5; i++)
+    //         {
+    //             element = (int)rand() / RAND_MAX * 10000 + 1; // возможно попадется
+    //             binary_search(a, bigSize, element);
+    //         }
+    //         auto end2 = steady_clock::now();
+    //         elapsedMilliSeconds2 = duration_cast<milliseconds>(end2 - begin2).count();
+
+    //                         // померяли интерп
+    //         auto begin3 = steady_clock::now();
+    //         for (int i = 0; i < 5; i++)
+    //         {
+    //             element = (int)rand() / RAND_MAX * 10000 + 1; // возможно попадется
+    //             interpolation_search(a, bigSize, element);
+    //         }
+    //         auto end3 = steady_clock::now();
+    //         elapsedMilliSeconds3 = duration_cast<milliseconds>(end3 - begin3).count();
+
+    //         if (bigSize >= 1000000000) // если размер достиг это, то добавляем уже чуть чуть поменьше
+    //             bigSize += bigSize * 2;
+    //         else
+    //             bigSize *= 10;
+    //                      // сколько заняло миллисекунд n итераций/n итераций = 1 итерация // 
+    //         cout << "Time elapsed(in milliseconds) for Sequential Search: " << elapsedMilliSeconds1 / 5 << endl;    
+    //         cout << "Time elapsed(in milliseconds) for Binary Search: " << elapsedMilliSeconds2 / 5 << endl;        
+    //         cout << "Time elapsed(in milliseconds) for Interpolation Search: " << elapsedMilliSeconds3 / 5 << endl; 
+    //     }
+    // }
 
 } // int main

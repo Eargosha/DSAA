@@ -27,7 +27,6 @@ void rand_fill_array(Array *arr, size_t size, Array hign, Array low)
 	for (size_t i = 0; i < size; i++) // Цикл для ввода заполнения
 	{
 		arr[i] = (float)rand() / RAND_MAX * diap + low; // Сама функция заполнения массива
-														// RAND_MAX - константа записанная в бибилиотеке cstdlib.  Гарантируется, что это значение не менее 32767
 	}
 }
 
@@ -169,6 +168,7 @@ void arr_is_sorted_assert()
 template <typename Array>
 long long sequential_search(const Array arr[], long long size, Array key)
 {
+	arr_is_sort(arr, size);
 	for (long long i = 0; i < size; ++i)
 		if (arr[i] == key)
 			return i; // значение найдено, возвращаем индекс
@@ -203,7 +203,7 @@ void sequential_search_assert()
 /// arr - массив, n - размер массива, x - то, что нужно найти, comparisions - кол-во сравнений
 /// (n-1)*4+3 => Big-O(n), т.к. константы обрезаем
 template <typename Array>
-Array find_closest(Array arr[], long long n, Array x, long long &comparisions)
+Array find_closest(Array arr[], size_t n, Array x, int &comparisions)
 {
 	comparisions = 1; // если пришел массив с 1 элементом, то возращаем это
 	if (n == 1)		  //"самый ближайший" элемент
@@ -212,7 +212,7 @@ Array find_closest(Array arr[], long long n, Array x, long long &comparisions)
 	Array closest = arr[0];		  // предполагаем, что первый элемент наиболее близок
 	Array diff = abs(x - arr[0]); // находим разницу между x и первым элементом
 
-	for (long long i = 1; i < n; i++)
+	for (size_t i = 1; i < n; i++)
 	{
 		Array currentDiff = abs(x - arr[i]); // находим элемент в момент итерации
 		if (currentDiff < diff)				 // вот сравнение
@@ -223,6 +223,29 @@ Array find_closest(Array arr[], long long n, Array x, long long &comparisions)
 		}
 	}
 	return closest;
+}
+
+/// Тестирование функции find_closest
+void find_closest_assert()
+{
+	int sizeSmall = 6;
+	int voidest;
+	int *a = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 67, 34, 1};
+
+	int temp = find_closest(a, sizeSmall, 8, voidest);
+	assert(temp == 6);
+
+	double temp2 = find_closest(b, sizeSmall, 1.032, voidest);
+	assert(temp2 == 1.03);
+
+	int temp3 = find_closest(c, sizeSmall, 31, voidest);
+	assert(temp3 == 34);
+
+	delete[] a;
+	delete[] b;
+	delete[] c;
 }
 
 /// Функция сортировки массива пузырьком по порядку - от меньшего к большему
@@ -246,43 +269,16 @@ void sort_buble(Array *arr, size_t size)
 	}
 }
 
-// /// Тест для sort_buble
-// void sosert_buble()
-// {
-// 	long long sizeSmall = 3;
-
-// 	int *a = new int[sizeSmall]{1, 3, 2};
-// 	double *b = new double[sizeSmall]{1.06, 1.02, 1.01};
-// 	int *c = new int[sizeSmall]{5, 3, 2};
-
-// 	sort_buble(a, sizeSmall);
-// 	sort_buble(b, sizeSmall);
-// 	sort_buble(c, sizeSmall);
-
-// 	int *a_ = new int[sizeSmall]{1, 2, 3};
-// 	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.06};
-// 	int *c_ = new int[sizeSmall]{2, 3, 5};
-
-// 	assert(a == a_);
-// 	assert(b == b_);
-// 	assert(c == c_);
-
-// 	delete[] a;
-// 	delete[] b;
-// 	delete[] c;
-// }
-
 /// Функция бинарного поиска элемента key в массиве arr размера size
-/// Возращает индекс элемента либо -1, если элемент не найден, либо 2, если массив не отсортирован
+/// Возращает индекс элемента либо -1, если элемент не найден, либо -2, если массив не отсортирован
 /// Массив должен быть обязательно отсортирован!
 template <typename Array>
-long long binary_search(Array *arr, long long size, Array key)
+long long binary_search(Array *arr, size_t size, Array key)
 {
-	// sort_buble(arr, size);		//На всякий случай сортируем массив пузырьком
 
 	if (arr_is_sort(arr, size) == false)
 	{
-		return 2;
+		return -2;
 	}
 
 	int l = 0;	  // Пол = 0
@@ -307,21 +303,32 @@ long long binary_search(Array *arr, long long size, Array key)
 /// Тест работы функции binary_search
 void binary_search_assert()
 {
-	long long sizeSmall = 3;
+	long long sizeSmall = 6;
 
-	int *a = new int[sizeSmall]{1, 2, 3};
-	double *b = new double[sizeSmall]{1.01, 1.02, 1.03};
+	int *a = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
 	// один не отсортированный
-	int *c = new int[sizeSmall]{5, 3, 2};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
 
-	long long temp2 = binary_search(a, sizeSmall, 3);
-	assert(temp2 == 2);
+	// поиск последней позиции
+	long long temp2 = binary_search(a, sizeSmall, 6);
+	assert(temp2 == 5);
 
+	// посик средней позиции
+	long long temp3 = binary_search(a, sizeSmall, 3);
+	assert(temp3 == 2);
+
+	// ну не нашел
+	long long temp4 = binary_search(a, sizeSmall, 54);
+	assert(temp4 == -1);
+
+	// в начальной позиции
 	long long temp = binary_search(b, sizeSmall, 1.01);
 	assert(temp == 0);
 
-	long long temp3 = binary_search(c, sizeSmall, 2);
-	assert(temp3 == 2);
+	// и если массивчик не отсортирован :(
+	long long temp5 = binary_search(c, sizeSmall, 2);
+	assert(temp5 == -2);
 
 	delete[] a;
 	delete[] b;
@@ -329,7 +336,7 @@ void binary_search_assert()
 }
 
 /// Функция бинарного поиска элемента key в массиве arr размера size
-/// Возращает индекс элемента либо -1, если элемент не найден, либо 2, если массив не отсортирован
+/// Возращает индекс элемента либо -1, если элемент не найден, либо -2, если массив не отсортирован
 /// Массив должен быть обязательно отсортирован!
 template <typename Array>
 long long interpolation_search(Array arr[], size_t size, Array key)
@@ -339,7 +346,7 @@ long long interpolation_search(Array arr[], size_t size, Array key)
 
 	if (arr_is_sort(arr, size) == false)
 	{ // Проверка на сортировку массива
-		return 2;
+		return -2;
 	}
 
 	while (low <= high && key >= arr[low] && key <= arr[high]) // Пока не найдем индекц нашего key
@@ -368,25 +375,154 @@ long long interpolation_search(Array arr[], size_t size, Array key)
 /// Тест работы функции interpolation_search
 void interpolation_search_assert()
 {
-	long long sizeSmall = 3;
+	long long sizeSmall = 6;
 
-	int *a = new int[sizeSmall]{1, 2, 3};
-	double *b = new double[sizeSmall]{1.01, 1.02, 1.03};
+	int *a = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
 	// один не отсортированный
-	int *c = new int[sizeSmall]{5, 3, 2};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
 
-	long long temp2 = interpolation_search(a, sizeSmall, 3);
-	assert(temp2 == 2);
+	// поиск последней позиции
+	long long temp2 = interpolation_search(a, sizeSmall, 6);
+	assert(temp2 == 5);
 
+	// посик средней позиции
+	long long temp3 = interpolation_search(a, sizeSmall, 3);
+	assert(temp3 == 2);
+
+	// ну не нашел
+	long long temp4 = interpolation_search(a, sizeSmall, 54);
+	assert(temp4 == -1);
+
+	// в начальной позиции
 	long long temp = interpolation_search(b, sizeSmall, 1.01);
 	assert(temp == 0);
 
-	long long temp3 = interpolation_search(c, sizeSmall, 2);
-	assert(temp3 == 2);
+	// и если массивчик не отсортирован :(
+	long long temp5 = interpolation_search(c, sizeSmall, 2);
+	assert(temp5 == -2);
 
 	delete[] a;
 	delete[] b;
 	delete[] c;
+}
+
+/// Процедура сортировки массива методом простого выбора
+/// Принимает массив типа Array, размер массива
+template <typename Array>
+void selectionSortRecursive(Array arr[], size_t n, int index = 0)
+{
+	if (index == n - 1)
+	{ // выходим из ок... функции, если размер = 1
+		return;
+	}
+
+	int min_index = index; // находим индекс минимального элемента
+	for (int j = index + 1; j < n; j++)
+	{
+		if (arr[j] < arr[min_index])
+		{				   // сравниваем элементы
+			min_index = j; // заменяем индекс, если сравнение прошло
+		}
+	}
+
+	swap(arr[index], arr[min_index]);		   // меняем элемент местами
+	selectionSortRecursive(arr, n, index + 1); // рекурсируем
+}
+
+/// Тест работы функции selectionSortRecursive
+void selectionSortRecursive_assert()
+{
+	long long sizeSmall = 6;
+
+	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
+	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+
+	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+
+	// поиск последней позиции
+	selectionSortRecursive(a, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(a[i] == a_[i]);
+	}
+
+	// посик средней позиции
+	selectionSortRecursive(b, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(b[i] == b_[i]);
+	}
+
+	// ну не нашел
+	selectionSortRecursive(c, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(c[i] == c_[i]);
+	}
+
+	delete[] a, b, c;
+	delete[] a_, b_, c_;
+}
+
+/// Процедура сортировки массива методом простого выбора
+/// Принимает массив типа Array, размер массива  int *a = new int[6]{3, 4, 90, 14, 23, 12};
+template <typename Array>
+void selectionSortIterative(Array arr[], size_t n)
+{
+	for (int i = 0; i < n - 1; i++)
+	{ // тут определяем итерацию одного элемента
+		int min_index = i;
+		for (int j = i + 1; j < n; j++)
+		{ // тут определяем итерацию элемента с чем сравнимаем
+			if (arr[j] < arr[min_index])
+			{
+				min_index = j; // ну и если проходит сравнение меняем индексы
+			}
+		}
+		swap(arr[i], arr[min_index]); // и меняем значения в массиве
+	}
+}
+
+/// Тест работы функции selectionSortIterative
+void selectionSortIterative_assert()
+{
+	long long sizeSmall = 6;
+
+	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
+	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+
+	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+
+	// поиск последней позиции
+	selectionSortIterative(a, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(a[i] == a_[i]);
+	}
+
+	// посик средней позиции
+	selectionSortIterative(b, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(b[i] == b_[i]);
+	}
+
+	// ну не нашел
+	selectionSortIterative(c, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(c[i] == c_[i]);
+	}
+
+	delete[] a, b, c;
+	delete[] a_, b_, c_;
 }
 
 #endif
