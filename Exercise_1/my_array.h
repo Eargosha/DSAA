@@ -250,7 +250,10 @@ void find_closest_assert()
 
 /// Функция сортировки массива пузырьком по порядку - от меньшего к большему
 /// arr - массив типа Array, size - размер массива
-/// Т.к. цикл вложенный, то его BigO(n^2)
+/// Т.к. цикл вложенный, то его BigO(n^2) 
+/// Худшее  – O(n2)
+/// Среднее – O(n2)
+/// Лучшее  – O(n)
 template <typename Array>
 void sort_buble(Array *arr, size_t size)
 {
@@ -268,6 +271,217 @@ void sort_buble(Array *arr, size_t size)
 		}
 	}
 }
+
+//сюда иди
+
+/// Функция тестирования для функции sort_bubble
+void sort_buble_test()
+{
+	long long sizeSmall = 6;
+
+	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
+	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+	int *d = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+	int *d_ = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+
+	// сортировка, ее проверка
+	sort_buble(a, sizeSmall);
+	sort_buble(b, sizeSmall);
+	sort_buble(c, sizeSmall);
+	sort_buble(d, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(a[i] == a_[i]);
+		assert(b[i] == b_[i]);
+		assert(c[i] == c_[i]);
+		assert(d[i] == d_[i]);
+	}
+
+	delete[] a, b, c;
+	delete[] a_, b_, c_;
+}
+
+
+/// Функция слияния двух отсортированных подмассивов из merge_sort
+template <typename Array>
+void merge_mas(Array arr, size_t left, size_t mid, size_t right) {
+    //вычисление размеров двух подмассивов  - левого и правого, а на какой стороне ты?
+	size_t leftSize = mid - left + 1;
+    size_t rightSize = right - mid;
+
+	//тут храним эти массивы
+	int *LeftArr = new int[leftSize];
+	int *RightArr = new int[rightSize];
+
+	//копируем элементы левого подмассива во временный левый
+    for (size_t i = 0; i < leftSize; i++) {
+        LeftArr[i] = arr[left + i];
+    }
+	//копируем элементы правого подмассива во временный правый
+    for (size_t j = 0; j < rightSize; j++) {
+        RightArr[j] = arr[mid + 1 + j];
+    }
+
+	//обьявляем индексы подмассивов для их обьединения, ибо в цикле while это удобнее
+    size_t i = 0; 
+	size_t j = 0; 
+	size_t k = left;
+
+	//слияние двух подмассивов в основной массив arr
+    while (i < leftSize && j < rightSize) {
+        if (LeftArr[i] <= RightArr[j]) {
+            arr[k] = LeftArr[i];
+            i++;
+        } else {
+            arr[k] = RightArr[j];
+            j++;
+        }
+        k++;
+    }
+
+	//добавление оставшихся элементов из левого подмассива
+    while (i < leftSize) {
+        arr[k] = LeftArr[i];
+        i++;
+        k++;
+    }
+
+	//добавление оставшихся элементов из правого подмассива
+    while (j < rightSize) {
+        arr[k] = RightArr[j];
+        j++;
+        k++;
+    }
+}
+
+/// Функция сортировки массива методом merge (слияний) по порядку - от меньшего к большему
+/// arr - сам массив, left - указывает на левую границу массива (для первого вызова является 0), 
+/// right - указывает на правую границу массива (для первого вызова является n - последним индексом массива)
+/// Big O::
+/// Лучший случай: когда массив уже отсортирован или почти отсортирован, сортировка слиянием все равно выполняется за O(n log n) операций
+/// Худший случай: Для сортировки слиянием худший случай также составляет O(n log n)
+/// Средний случай: Средняя сложность сортировки слиянием также составляет O(n log n)
+template <typename Array>
+void merge_sort(Array arr, size_t left, size_t right) {
+	//если массив вовсе не является размера 1, то делаем
+    if (left < right) {
+		//вычисляем серединку
+        size_t mid = left + (right - left) / 2;
+
+		//и тут мы вызываем рекурсию, чтобы дальше делить уже разделенные левые и правые части массива от 0 до середины и от середины до конца
+        merge_sort(arr, left, mid);
+        merge_sort(arr, mid + 1, right);
+
+		//тут вызываем функцию, которая производит слияние двух отсортированных массивов
+        merge_mas(arr, left, mid, right);
+    }
+}
+
+/// Функция тестирования для функции merge_sort
+void merge_sort_test()
+{
+	long long sizeSmall = 6;
+
+	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
+	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+	int *d = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+	int *d_ = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+	merge_sort(a, 0, sizeSmall);
+	merge_sort(b, 0, sizeSmall);
+	merge_sort(c, 0, sizeSmall);
+	merge_sort(d, 0, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(a[i] == a_[i]);
+		assert(b[i] == b_[i]);
+		assert(c[i] == c_[i]);
+		assert(d[i] == d_[i]);
+	}
+
+	delete[] a, b, c;
+	delete[] a_, b_, c_;
+}
+
+/// Функция для определения опорного элемента в массиве
+/// arr - сам массив, left - указывает на левую границу массива (для первого вызова является 0), 
+/// right - указывает на правую границу массива (для первого вызова является n - последним индексом массива)
+template <typename Array>
+size_t find_partition(Array *arr, size_t left, size_t right) {
+    Array pivotIndex = arr[right]; 		// Выбираем последний элемент в качестве опорного
+    size_t i = (left - 1); 			// Инициализация индекса меньших элементов
+
+    for (size_t j = left; j <= right - 1; j++) {
+        if (arr[j] < pivotIndex) {
+            i++; 					// Увеличиваем индекс меньших элементов
+            swap(arr[i], arr[j]);   // Меняем элементы местами
+        }
+    }
+    swap(arr[i + 1], arr[right]); 	// Меняем опорный элемент с элементом в позиции i + 1
+    return (i + 1); 				// Возвращаем индекс опорного элемента
+}
+
+/// Это рекурсивная функция для сортировки массива
+/// arr - сам массив, left - указывает на левую границу массива (для первого вызова является 0), 
+/// right - указывает на правую границу массива (для первого вызова является n - последним индексом массива)
+/// Память —  O(1)
+/// Big O::
+/// Худший случай: O(n2)
+/// Лучший случай: O(n)
+/// Средний случай: O(n log n)
+template <typename Array>
+void quick_sort(Array *arr, size_t left, size_t right) {
+    if (left < right) {
+        size_t pivotIndex = find_partition(arr, left, right); 	// Находим опорный элемент
+		if (pivotIndex > 0) {
+        	quick_sort(arr, left, pivotIndex - 1); 				// Если опорный элемент есть вообще рекурсивно сортируем элементы перед опорным
+		}
+		quick_sort(arr, pivotIndex + 1, right); 				// Рекурсивно сортируем элементы после опорного
+    }
+}
+
+/// Функция тестирования для функции quick_sort
+void quick_sort_test()
+{
+	long long sizeSmall = 6;
+
+	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
+	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
+	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+	int *d = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
+	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
+	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+	int *d_ = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+
+	quick_sort(a, 0, sizeSmall);
+	quick_sort(b, 0, sizeSmall);
+	quick_sort(c, 0, sizeSmall);
+	quick_sort(d, 0, sizeSmall);
+	for (int i = 0; i > sizeSmall; i++)
+	{
+		assert(a[i] == a_[i]);
+		assert(b[i] == b_[i]);
+		assert(c[i] == c_[i]);
+		assert(d[i] == d_[i]);
+	}
+
+	delete[] a, b, c;
+	delete[] a_, b_, c_;
+}
+
 
 /// Функция бинарного поиска элемента key в массиве arr размера size
 /// Возращает индекс элемента либо -1, если элемент не найден, либо -2, если массив не отсортирован
@@ -407,7 +621,7 @@ void interpolation_search_assert()
 	delete[] c;
 }
 
-/// Процедура сортировки массива методом простого выбора
+/// Процедура сортировки массива методом простого выбора по возрастанию
 /// Принимает массив типа Array, размер массива
 template <typename Array>
 void selectionSortRecursive(Array arr[], size_t n, int index = 0)
@@ -443,32 +657,23 @@ void selectionSortRecursive_assert()
 	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
 	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
 
-	// поиск последней позиции
+	int *d = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+	int *d_ = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
+	// сортировка, ее проверка
 	selectionSortRecursive(a, sizeSmall);
+	selectionSortRecursive(b, sizeSmall);
+	selectionSortRecursive(c, sizeSmall);
+	selectionSortRecursive(d, sizeSmall);
 	for (int i = 0; i > sizeSmall; i++)
 	{
 		assert(a[i] == a_[i]);
-	}
-
-	// посик средней позиции
-	selectionSortRecursive(b, sizeSmall);
-	for (int i = 0; i > sizeSmall; i++)
-	{
 		assert(b[i] == b_[i]);
-	}
-
-	// ну не нашел
-	selectionSortRecursive(c, sizeSmall);
-	for (int i = 0; i > sizeSmall; i++)
-	{
 		assert(c[i] == c_[i]);
+		assert(d[i] == d_[i]);
 	}
-
-	delete[] a, b, c;
-	delete[] a_, b_, c_;
 }
 
-/// Процедура сортировки массива методом простого выбора
+/// Процедура сортировки массива методом простого выбора по возрастанию
 /// Принимает массив типа Array, размер массива  int *a = new int[6]{3, 4, 90, 14, 23, 12};
 template <typename Array>
 void selectionSortIterative(Array arr[], size_t n)
@@ -495,30 +700,25 @@ void selectionSortIterative_assert()
 	int *a = new int[sizeSmall]{6, 2, 3, 4, 5, 1};
 	double *b = new double[sizeSmall]{1.04, 1.05, 1.03, 1.01, 1.02, 1.06};
 	int *c = new int[sizeSmall]{5, 3, 2, 5, 3, 2};
+	int *d = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
 
 	int *a_ = new int[sizeSmall]{1, 2, 3, 4, 5, 6};
 	double *b_ = new double[sizeSmall]{1.01, 1.02, 1.03, 1.04, 1.05, 1.06};
 	int *c_ = new int[sizeSmall]{2, 2, 3, 3, 5, 5};
+	int *d_ = new int[sizeSmall]{6, 5, 4, 3, 2, 1};
 
-	// поиск последней позиции
-	selectionSortIterative(a, sizeSmall);
+
+	// сортировка, ее проверка
+	selectionSortRecursive(a, sizeSmall);
+	selectionSortRecursive(b, sizeSmall);
+	selectionSortRecursive(c, sizeSmall);
+	selectionSortRecursive(d, sizeSmall);
 	for (int i = 0; i > sizeSmall; i++)
 	{
 		assert(a[i] == a_[i]);
-	}
-
-	// посик средней позиции
-	selectionSortIterative(b, sizeSmall);
-	for (int i = 0; i > sizeSmall; i++)
-	{
 		assert(b[i] == b_[i]);
-	}
-
-	// ну не нашел
-	selectionSortIterative(c, sizeSmall);
-	for (int i = 0; i > sizeSmall; i++)
-	{
 		assert(c[i] == c_[i]);
+		assert(d[i] == d_[i]);
 	}
 
 	delete[] a, b, c;
