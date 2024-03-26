@@ -32,87 +32,6 @@ void rand_fill_array(Array *arr, size_t size, Array hign, Array low)
 	}
 }
 
-/// Функция вывода массива в текстовый файл
-template <typename Array>
-void array_to_file(const Array *arr, size_t size, const string &file_name)
-{
-	ofstream file(file_name); // Открытие файла Out file stream
-	if (!file.is_open())	  // Если не открыт файл
-	{
-		throw runtime_error("File not found"); // Если что, то в ошибку
-											   // return;
-	}
-	for (size_t i = 0; i < size; i++) // Цикл для вывода массива в файл
-	{
-		file << arr[i] << endl; // Выводим элемент, затем новую строку
-	}
-}
-
-/// Функция загрузки массива из файла
-template <typename Array>
-void array_from_file(Array *arr, size_t size, const string &file_name)
-{
-	ifstream file(file_name); // Открытие файла In file stream
-	if (!file.is_open())	  // Если не открыт файл
-	{
-		throw runtime_error("File not found"); // Если что, то в ошибку
-											   // cout << "File not found:" << endl;          // Если что, то в ошибку
-	}
-	for (size_t i = 0; i < size; i++) // Цикл для чтения массива из файла
-	{
-		file >> arr[i]; // Построчно числа в массив
-	}
-}
-
-/// Функция поиска кол-ва элементов массива в файле
-size_t array_size_form_file(const string &file_name)
-{
-	size_t res = 0;			  // Переменная для счета кол-ва строк
-	string line;			  // Строка, с помощью которой ищем кол-во строк
-	ifstream file(file_name); // Открытие файла In file stream
-	if (!file.is_open())	  // Если не открыт файл
-	{
-		throw runtime_error("File not found"); // Если что, то в ошибку
-											   // return 0;
-	}
-	// while (getline(file, line)) // Цикл счёта кол-ва строк -> кол-ва элементов массива
-	// {
-	//     res++; // Цикл будет жить, пока getline делает переходы
-	// }
-	while (!file.eof())
-	{
-		char ch;
-		file >> ch;
-		res++;
-	}
-
-	file.close(); // Закрыть файл
-	if (res == 0) // Ошибка, если файл пуст
-		throw runtime_error("Array not found in file - file is empty");
-	return res;
-}
-
-/// Загоняет массив в бинарный файл
-template <typename Array>
-void array_to_bin_file(const Array *arr, long long size, const string &file_name)
-{
-	ofstream file(file_name, ios::binary);
-	file.write(reinterpret_cast<const char *>(&size), sizeof(size));
-	file.write(reinterpret_cast<const char *>(arr), sizeof(float) * size);
-	file.close();
-}
-
-/// Выгоняет массив из бинарного файла
-template <typename Array>
-void array_from_bin_file(Array *&arr, long long &size, const string &file_name)
-{
-	ifstream file(file_name, ios::binary);
-	file.read(reinterpret_cast<char *>(&size), sizeof(size));
-	arr = new Array[size];
-	file.read(reinterpret_cast<char *>(arr), sizeof(Array) * size);
-	file.close();
-}
-
 /// Функция проверяющая отсортирован ли динамический массив arr размера size (элементы должны быть сравнимыми)
 /// Есть 2 сортировки: по возростанию(по умолчанию) и убыванию(задается третьим параметром rule: 'l' по убыванию)
 template <typename Array>
@@ -170,7 +89,6 @@ void arr_is_sorted_assert()
 template <typename Array>
 long long sequential_search(const Array arr[], long long size, Array key)
 {
-	arr_is_sort(arr, size);
 	for (long long i = 0; i < size; ++i)
 		if (arr[i] == key)
 			return i; // значение найдено, возвращаем индекс
@@ -435,7 +353,7 @@ void merge_mas(Array *arr, size_t left, size_t mid, size_t right)
 /// Худший случай: Для сортировки слиянием худший случай также составляет O(n log n)
 /// Средний случай: Средняя сложность сортировки слиянием также составляет O(n log n)
 template <typename Array>
-void merge_sort(Array arr, size_t left, size_t right)
+void merge_sort(Array &arr, size_t left, size_t right)
 {
 	// если массив вовсе не является размера 1, то делаем
 	if (left < right)
