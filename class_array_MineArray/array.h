@@ -148,6 +148,11 @@ public:
         {
             throw invalid_argument("This array is already empty!");
         }
+        // Если размер в четыре раза меньше емкости, уменьшаем емкость в 2 раза
+        if (size <= (indexLastElement / 4))
+        {
+            this->resize(indexLastElement / 2);
+        }
     }
 
     /// @brief Удаление первого элемента массива
@@ -163,6 +168,11 @@ public:
         {
             throw invalid_argument("This array is already empty!");
         }
+        // Если размер в четыре раза меньше емкости, уменьшаем емкость в 2 раза
+        if (size <= (indexLastElement / 4))
+        {
+            this->resize(indexLastElement / 2);
+        }
     }
 
     /// @brief Ищет элемент findThis в массиве с помощью Sequatial search
@@ -174,7 +184,7 @@ public:
         return sequential_search(array, indexLastElement, findThis);
     }
 
-    /// @brief Сортировка массива методом Merge sortik :) :)))))))))))))))): ::))) :) :)
+    /// @brief Сортировка массива методом Merge sortik по возрастанию
     /// Средний: O(n log n)
     void sort()
     {

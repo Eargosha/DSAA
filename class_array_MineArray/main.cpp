@@ -15,20 +15,20 @@ int main()
     testResize();
     testDeleteBackFront();
 
-    // MineArray<int> b(3);
-    // b[0] = 22;
-    // b[1] = 33;
-    // b[2] = 11;
+    MineArray<int> b(3);
+    b[0] = 22;
+    b[1] = 33;
+    b[2] = 11;
 
-    // b.addFront(123231);
-    // b.addBack(123231);
-    // b.deleteLast();
-    // b.deleteFirts();
+    b.addFront(123231);
+    b.addBack(123231);
+    b.deleteLast();
+    b.deleteFirts();
 
-    // for (size_t i = 0; i < b.lenght(); i++)
-    // {
-    //     cout << b[i] << "\n";
-    // }
+    for (size_t i = 0; i < b.lenght(); i++)
+    {
+        cout << b[i] << "\n";
+    }
 
     // cout << "gandon_meme_sound" << endl;
     // cout << b.search(11) << endl;
