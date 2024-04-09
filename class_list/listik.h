@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cassert>
 
 using namespace std;
 
@@ -138,8 +139,12 @@ public:
     -Получение размера = length = average O(n)
 
 
-                TO DO:
+                TO CHECK:
     -Обьединение списков (конкатенация) = concatinateLists = average O(1 || n??)
+    -Исправил delelteInList
+    -Спроси про комменты
+    -Тест ассертами
+
 */
 
 /// @brief Класс DoublyLinkedList есть двусвязный список
@@ -185,7 +190,7 @@ public:
         tail = nullptr;
         size = 0;
         // Копируем элементы из другого списка.
-        copy(other);
+        copyIn(other);
     }
 
     /// @brief Конструктор перемещения
@@ -210,10 +215,10 @@ public:
         }
 
         // Очищаем текущий список.
-        clearSpisok();
+        clearList();
 
         // Копируем элементы из другого списка.
-        copy(other);
+        copyIn(other);
 
         return *this;
     }
@@ -229,7 +234,7 @@ public:
         }
 
         // Очищаем текущий список.
-        clearSpisok();
+        clearList();
 
         // Перемещаем элементы из другого списка.
         head = other.head;
@@ -245,23 +250,53 @@ public:
     ~DoublyLinkedList()
     {
         // Чистим чистим чистим!
-        clearSpisok();
+        clearList();
     }
 
     //////////////////////////////////////////Без категорииииииииииии/////////////////////////////////////
 
+    void concatinateWith(DoublyLinkedList<Type> other)
+    {
+        // Проверяем, является ли список "other" пустым
+        if (other.head == nullptr)
+        {
+            return; // Если список "other" пуст, выходим из функции
+        }
+
+        // Если текущий список пуст, присваиваем ему значения из списка "other"
+        if (head == nullptr)
+        {
+            head = other.head;
+            tail = other.tail;
+        }
+        else
+        {
+            // Если текущий список не пуст, добавляем элементы из "other" в конец текущего списка
+            tail->next = other.head; // Устанавливаем указатель на следующий элемент последнего элемента текущего списка
+            other.head->prev = tail; // Устанавливаем указатель на предыдущий элемент первого элемента списка "other"
+            tail = other.tail;       // Обновляем указатель на хвост текущего списка
+        }
+
+        size += other.size; // Увеличиваем размер текущего списка на размер списка "other"
+
+        // Обнуляем указатели и размер списка "other" для предотвращения непреднамеренных изменений
+        other.head = nullptr;
+        other.tail = nullptr;
+        other.size = 0;
+    }
+
     /// @brief Глубокое копирование списка
     /// @param other То, что копируем
-    void copy(const DoublyLinkedList<Type> &other)
+    void copyIn(const DoublyLinkedList<Type> &other)
     {
         // Место освободим с прохода, а то застрянет
-        clearSpisok();
+        clearList();
 
         // Итерационный узелочек
         Nodule<Type> *current = other.head;
         while (current != nullptr)
         {
-            push_back(current->data);
+            addBack(current->data);
             current = current->next;
         }
     }
@@ -325,7 +360,7 @@ public:
         return current;
     }
 
-    /// @brief Сортировка массива по возрастанию
+    /// @brief Сортировка массива по возрастанию пузырьком
     void sort()
     {
         if (size <= 1)
@@ -333,6 +368,7 @@ public:
             return;
         }
 
+        // задаем два узла для сравнения
         Nodule<Type> *current = head;
         Nodule<Type> *nextNode = nullptr;
 
@@ -342,14 +378,16 @@ public:
 
             while (nextNode != nullptr)
             {
+                // Сравнение текущего элемента с следующим элементом
                 if (current->data > nextNode->data)
                 {
+                    // Обмен значениями текущего и следующего элементов
                     swap(current->data, nextNode->data);
                 }
-
+                // Переходим к след узлу
                 nextNode = nextNode->next;
             }
-
+            // Также переходим к след узлу
             current = current->next;
         }
     }
@@ -372,7 +410,7 @@ public:
     }
 
     /// @brief Чистим, чистим списочек
-    void clearSpisok()
+    void clearList()
     {
         // Удаляем все узлы из списка.
         while (head != nullptr)
@@ -495,9 +533,9 @@ public:
         size--;
     }
 
-    /// @brief Удаляет узел node из списка вашего, княже
-    /// @param node То, что истребить надо
-    void deleteInList(Nodule<Type> *node)
+    /// @brief Удаляет узел с значением value из списка вашего, княже
+    /// @param value То, что истребить надо
+    void deleteInList(Type value)
     {
         // Нечего удалять, ты че творишь?!
         if (head == nullptr)
@@ -506,21 +544,32 @@ public:
             return;
         }
 
-        // Смотрим, если головка, удаляем головку
-        if (node == head)
+        // Временный узел
+        Nodule<Type> *temp = this->find(value);
+
+        // Если временный узел пуст, то его нет в списке
+        if (temp != nullptr)
         {
-            this->deleteFront();
-        }
-        // Смотрим, если хвостик, удаляем хвостик
-        else if (node == tail)
-        {
-            this->deleteBack();
+            // Смотрим, если головка, удаляем головку
+            if (temp == head)
+            {
+                this->deleteFront();
+            }
+            // Смотрим, если хвостик, удаляем хвостик
+            else if (temp == tail)
+            {
+                this->deleteBack();
+            }
+            else
+            {
+                // Иначе удаляем указанный узел из середины списка.
+                temp->prev->next = temp->next;
+                temp->next->prev = temp->prev;
+            }
         }
         else
         {
-            // Иначе удаляем указанный узел из середины списка.
-            node->prev->next = node->next;
-            node->next->prev = node->prev;
+            throw invalid_argument("There's no this value in this list!");
         }
 
         // Уменьшаем, а то большой слишком
@@ -555,3 +604,111 @@ public:
         size--;
     }
 };
+//////////////////////////////////////////Ассерты/////////////////////////////////////
+
+void testAddFront() {
+    DoublyLinkedList<int> list;
+
+    // Тестирование добавления элемента в пустой список
+    list.addFront(1);
+    assert(list.length() == 1);
+    assert(list.get_nodule(0)->data == 1);
+
+    // Добавляем еще элементы в список
+    list.addFront(2);
+    list.addFront(3);
+
+    // Тестирование добавления элементов в начало списка
+    assert(list.length() == 3);
+    assert(list.get_nodule(1)->data == 2);
+    assert(list.get_nodule(2)->data == 3);
+}
+
+void testFind() {
+    DoublyLinkedList<int> list;
+    
+    // Добавляем элементы в список
+    list.addBack(1);
+    list.addBack(2);
+    list.addBack(3);
+
+    // Тестирование поиска существующего элемента
+    assert(list.find(2) != nullptr);
+
+    // Тестирование поиска несуществующего элемента
+    assert(list.find(5) == nullptr);
+}
+
+void testSort() {
+    DoublyLinkedList<int> list;
+
+    // Тестирование сортировки пустого списка
+    list.sort();
+    assert(list.length() == 0);
+
+    // Добавляем элементы в список
+    list.addBack(3);
+    list.addBack(1);
+    list.addBack(2);
+
+    // Тестирование сортировки списка
+    list.sort();
+    assert(list.find(1)->data == 1);
+    assert(list.find(2)->data == 2);
+    assert(list.find(3)->data == 3);
+}
+
+// Тестирование класса
+void allAsertTests()
+{
+                // Проверяем тут все кучей малой
+    // Конструктор по умолчанию
+    DoublyLinkedList<int> list1;
+    assert(list1.length() == 0);
+
+    // Конструктор, заполняющий список n элементами с значением value
+    DoublyLinkedList<int> list2(5, 10);
+    assert(list2.length() != 0);
+    assert(list2.length() == 5);
+    assert(list2.get_nodule(2)->data == 10);
+
+    // Добавление элемента в начало списка
+    list1.addFront(0);
+    assert(list1.length() == 1);
+    assert(list2.get_nodule(0)->data == 0);
+
+    // Добавление элемента в конец списка
+    list1.addBack(6);
+    assert(list1.length() == 2);
+    assert(list2.get_nodule(1)->data == 6);
+
+    // Удаление последнего элемента из списка
+    list1.deleteBack();
+    assert(list1.length() == 1);
+
+    // Удаление первого элемента из списка
+    list1.deleteFront();
+    assert(list1.length() == 0);
+
+    // Вставка нового узла, содержащего data, после указанного узла node
+    list1.addFront(2);
+    list1.addInList(8, list1.find(2));
+    assert(list1.length() == 1);
+    assert(list2.get_nodule(0)->data == 2);
+    assert(list2.get_nodule(1)->data == 8);
+
+    // Склеивание двух списков
+    list1.concatinateWith(list2);
+    assert(list1.length() == 7);
+
+    // Удаление указанного узла из списка
+    list1.deleteInList(2);
+    assert(list1.length() == 6);
+    assert(list2.get_nodule(0)->data == 8);
+    assert(list2.get_nodule(1)->data == 10);
+                // тут некоторые методы выделил
+    testSort();
+    testAddFront();
+    testFind();
+    
+}
