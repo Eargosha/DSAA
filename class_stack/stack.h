@@ -16,16 +16,36 @@ public:
     }
 
     /// @brief Удаление элемента из вершины стека
-    void pop()
+    Type pop()
     {
         // Если стечек пуст
-        if (this->length() == 0)
+        if (this->isEmpty())
         {
-            throw out_of_range("Stack is empty!");
-            return;
+            return 0;
         }
         // ИНАЧЕ МЯСО
+        Type val = this->get_nodule(0)->data;
         this->deleteFront();
+        return val;
+    }
+
+    /// @brief Проверяет пустой ли стек
+    /// @return Значение true||false или 1||0
+    bool isEmpty() {
+        bool aaa = false;
+        if (this->length() == 0) 
+            aaa = true;
+        return aaa; 
+    }
+
+    /// @brief Возращает последний элемент стека
+    /// @return Элемент, если список пуст, то 0
+    Type peek() {
+        if (this->isEmpty())
+        {
+            return 0;
+        }
+        return this->get_nodule(0)->data;
     }
 };
 
@@ -54,6 +74,7 @@ void testPop() {
 
     stack.pop();
     assert(stack.length() == 2);
+
     assert(stack.get_nodule(0)->data  == 2);
 
     stack.pop();
@@ -64,8 +85,38 @@ void testPop() {
     assert(stack.length() == 0);
 }
 
+/// @brief Тестирование функции peek
+void testPeek() {
+    Stack<int> stack;
+
+    stack.push(1);
+    stack.push(2);
+    stack.push(3);
+
+    assert(stack.peek() == 3);
+
+    stack.pop();
+    assert(stack.peek() == 2);
+
+    stack.push(123);
+    assert(stack.peek() == 123);
+}
+
+/// @brief Тестик для isEmpty
+void testIsEmpty() {
+    Stack<int> stack;
+    assert(stack.isEmpty());
+
+    stack.push(123);
+    assert(!stack.isEmpty());
+}
+
+
+
 /// @brief Функция тестирования класса Stack
 void testStack() {
     testPop();
     testPush();
+    testIsEmpty();
+    testPeek();
 }

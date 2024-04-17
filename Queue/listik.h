@@ -255,8 +255,6 @@ public:
 
     //////////////////////////////////////////Без категорииииииииииии/////////////////////////////////////
 
-    /// @brief concatinateWith соединяет два списка, удаляет тот список, что присоединяли
-    /// @param other тот, что присоединяют
     void concatinateWith(DoublyLinkedList<Type> other)
     {
         // Проверяем, является ли список "other" пустым
@@ -286,13 +284,6 @@ public:
         other.tail = nullptr;
         other.size = 0;
     }
-
-
-    //       TO CHECK:
-    // -Обьединение списков (конкатенация) = concatinateLists = average O(1 || n??)
-    // -Исправил delelteInList
-    // -Спроси про комменты
-    // -Тест ассертами
 
     /// @brief Глубокое копирование списка
     /// @param other То, что копируем
@@ -354,7 +345,7 @@ public:
     Nodule<Type> *get_nodule(size_t place)
     {
         // Проверка
-        if (place < 0 || place >= size)
+        if (place < 0 || place > size)
         {
             throw out_of_range("Invalid index");
         }
@@ -515,13 +506,13 @@ public:
     //////////////////////////////////////////Удаленьица/////////////////////////////////////
 
     /// @brief Удаляет узел списка с его начала, вот так вот, без церемоний
-    int deleteFront()
+    void deleteFront()
     {
         // Если список пуст, то кидаем ошибку
         if (head == nullptr)
         {
-            //throw out_of_range("List is empty!");
-            return 1;
+            throw out_of_range("List is empty!");
+            return;
         }
 
         // Береги голову, да да
@@ -540,17 +531,17 @@ public:
         }
         delete temp;
         size--;
-        return 0;
     }
 
     /// @brief Удаляет узел с значением value из списка вашего, княже
     /// @param value То, что истребить надо
-    int deleteInList(Type value)
+    void deleteInList(Type value)
     {
         // Нечего удалять, ты че творишь?!
         if (head == nullptr)
         {
-            return 1;
+            throw out_of_range("List is empty!");
+            return;
         }
 
         // Временный узел
@@ -581,18 +572,18 @@ public:
             throw invalid_argument("There's no this value in this list!");
         }
 
-        return 0;
         // Уменьшаем, а то большой слишком
         size--;
     }
 
     /// @brief Удаляет узел списка с его конца, вот так вот, без церемоний
-    int deleteBack()
+    void deleteBack()
     {
         // Если списочек пустенький, кричим громко ошибкой
         if (tail == nullptr)
         {
-            return 1;
+            throw out_of_range("List is empty!");
+            return;
         }
 
         // Хвостик временно запоминаем
@@ -611,12 +602,11 @@ public:
         }
         delete temp;
         size--;
-        return 0;
     }
 };
 //////////////////////////////////////////Ассерты/////////////////////////////////////
+// Тестирование класса
 
-/// @brief тестирует AddFront
 void testAddFront() {
     DoublyLinkedList<int> list;
 
@@ -632,26 +622,9 @@ void testAddFront() {
     // Тестирование добавления элементов в начало списка
     assert(list.length() == 3);
     assert(list.get_nodule(1)->data == 2);
+    assert(list.get_nodule(2)->data == 3);
 }
 
-/// @brief тестирует все Delete
-void testDelete() {
-    DoublyLinkedList<int> list;
-
-    // Тестирование добавления элемента в пустой список
-    assert(list.deleteBack()==1);
-    assert(list.deleteFront()==1);
-    assert(list.deleteInList(23)==1);
-
-    list.addFront(1);
-    assert(list.length() == 1);
-    assert(list.get_nodule(0)->data == 1);
-
-    list.deleteFront();
-    assert(list.length() == 0);
-}
-
-/// @brief тестирует Find
 void testFind() {
     DoublyLinkedList<int> list;
     
@@ -667,7 +640,6 @@ void testFind() {
     assert(list.find(5) == nullptr);
 }
 
-/// @brief тестирует Sort
 void testSort() {
     DoublyLinkedList<int> list;
 
@@ -687,14 +659,57 @@ void testSort() {
     assert(list.find(3)->data == 3);
 }
 
-// Тестирование класса
+
 void allAsertTests()
 {
+                // Проверяем тут все кучей малой
+    // Конструктор по умолчанию
+    DoublyLinkedList<int> list1;
+    assert(list1.length() == 0);
 
+    // Конструктор, заполняющий список n элементами с значением value
+    DoublyLinkedList<int> list2(5, 10);
+    assert(list2.length() != 0);
+    assert(list2.length() == 5);
+    assert(list2.get_nodule(2)->data == 10);
+
+    // Добавление элемента в начало списка
+    list1.addFront(0);
+    assert(list1.length() == 1);
+    assert(list2.get_nodule(0)->data == 0);
+
+    // Добавление элемента в конец списка
+    list1.addBack(6);
+    assert(list1.length() == 2);
+    assert(list2.get_nodule(1)->data == 6);
+
+    // Удаление последнего элемента из списка
+    list1.deleteBack();
+    assert(list1.length() == 1);
+
+    // Удаление первого элемента из списка
+    list1.deleteFront();
+    assert(list1.length() == 0);
+
+    // Вставка нового узла, содержащего data, после указанного узла node
+    list1.addFront(2);
+    list1.addInList(8, list1.find(2));
+    assert(list1.length() == 1);
+    assert(list2.get_nodule(0)->data == 2);
+    assert(list2.get_nodule(1)->data == 8);
+
+    // Склеивание двух списков
+    list1.concatinateWith(list2);
+    assert(list1.length() == 7);
+
+    // Удаление указанного узла из списка
+    list1.deleteInList(2);
+    assert(list1.length() == 6);
+    assert(list2.get_nodule(0)->data == 8);
+    assert(list2.get_nodule(1)->data == 10);
                 // тут некоторые методы выделил
     testSort();
     testAddFront();
     testFind();
-    testDelete();
     
 }
