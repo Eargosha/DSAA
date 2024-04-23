@@ -5,7 +5,7 @@
 /// @tparam Type тип элементов стека
 template <typename Type>
 // Воспользуемся прошлым классом и сделаем наследование от двусвязного списка
-class Stack : public DoublyLinkedList<Type>
+class Stack : private DoublyLinkedList<Type>
 {
 public:
     /// @brief Добавление элемента в вершину стека
@@ -21,7 +21,7 @@ public:
         // Если стечек пуст
         if (this->isEmpty())
         {
-            return 0;
+            return Type();
         }
         // ИНАЧЕ МЯСО
         Type val = this->get_nodule(0)->data;
@@ -38,14 +38,25 @@ public:
         return aaa; 
     }
 
+    /// @brief Возращает размер стека
+    /// @return Размер стека типа Type
+    size_t size() {
+        return this->length();
+    }
+
     /// @brief Возращает последний элемент стека
     /// @return Элемент, если список пуст, то 0
     Type peek() {
         if (this->isEmpty())
         {
-            return 0;
+            return Type();
         }
         return this->get_nodule(0)->data;
+    }
+    
+    /// @brief Очищение стека
+    void reset() {
+        this->clearList();
     }
 };
 
@@ -54,14 +65,13 @@ void testPush() {
     Stack<int> stack;
 
     stack.push(1);
-    assert(stack.get_nodule(0)->data == 1);
+    assert(stack.peek() == 1);
 
     stack.push(2);
-    assert(stack.get_nodule(0)->data == 2);
+    assert(stack.peek() == 2);
     stack.push(3);
 
-    assert(stack.get_nodule(1)->data == 2);
-    assert(stack.get_nodule(0)->data == 3);
+    assert(stack.peek() == 3);
 }
 
 /// @brief Функция тестирования метода pop
@@ -73,16 +83,16 @@ void testPop() {
     stack.push(3);
 
     stack.pop();
-    assert(stack.length() == 2);
+    assert(stack.size() == 2);
 
-    assert(stack.get_nodule(0)->data  == 2);
-
-    stack.pop();
-    assert(stack.length() == 1);
-    assert(stack.get_nodule(0)->data  == 1);
+    assert(stack.peek()  == 2);
 
     stack.pop();
-    assert(stack.length() == 0);
+    assert(stack.size() == 1);
+    assert(stack.peek()  == 1);
+
+    stack.pop();
+    assert(stack.size() == 0);
 }
 
 /// @brief Тестирование функции peek

@@ -23,9 +23,7 @@ int main() {
 
     stack.push(40);
 
-    stack.concatinateWith(stack2);
-    cout << stack.to_string() << endl;
-    cout << stack.length() << endl;
+    cout << stack.size() << endl;
     //пустой стек
     Stack<int> stack3;
     cout << stack3.isEmpty() << endl;
