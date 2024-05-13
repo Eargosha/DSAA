@@ -13,15 +13,17 @@ private:
     /// @brief Размер строки
     int size;
 
-    /// @brief Метод копирования массива символов user_input в str обьект, куда копируем
+    /// @brief Метод копирования массива символов user_input в str обьекта, куда копируем
     /// @param user_input То, что копируется в обьект
     void copy(const char *user_input)
     {
         size = 0;
+        // Находим размерчики строки
         while (user_input[size] != '\0')
         {
             size++;
         }
+        // Затем создаем и записываем значения из user input
         str = new char[size + 1];
         for (int i = 0; i < size; i++)
         {
@@ -51,6 +53,32 @@ public:
     ~NewString()
     {
         delete[] str;
+    }
+
+    /// @brief Конструктор перемещения
+    /// @param other То, что перемещаем
+    NewString(NewString &&other) noexcept
+    {
+        str = other.str;
+        size = other.size;
+        other.str = nullptr;
+        other.size = 0;
+    }
+
+    /// @brief Оператор присваивания перемещения
+    /// @param other То, с чем работаем
+    /// @return Обьект - результат типа NewString
+    NewString &operator=(NewString &other) 
+    {
+        if (this != &other)
+        {
+            delete[] str;
+            str = other.str;
+            size = other.size;
+            other.str = nullptr;
+            other.size = 0;
+        }
+        return *this;
     }
 
     /// Некоторые операторы ///
@@ -98,7 +126,6 @@ public:
         // Теперь со второй
         for (int j = 0; j < user_input.size; j++, i++)
         {
-            temp.str[i] = user_input.str[j];
         }
         temp.str[temp.size] = '\0';
         return temp;
@@ -163,16 +190,16 @@ public:
     void prefixFunction(int *prefix_function) const
     {
         int m = count(); // Получаем длину строки
-        if (m == 1)
+        if (m == 1)      // Если строка == 1, то префиксная функция = 0
         {
-            prefix_function[0] = 0; // Для строки длины 1 префиксная функция равна 0
+            prefix_function[0] = 0;
             return;
         }
         prefix_function[0] = 0; // Для первого символа префиксная функция равна 0
         int j = 0;
-        for (int i = 1; i < m; i++)
+        for (int i = 1; i < m; i++) // Этот цикл определяет префиксную функцию для каждого индекса от 1 до m-1
         {
-            while (j > 0 && str[i] != str[j])
+            while (j > 0 && str[i] != str[j]) // Этот цикл находит наибольший собственный префикс строки, что также является суффиксом подстроки
             {
                 j = prefix_function[j - 1]; // Переходим на следующий элемент префиксной функции
             }
@@ -200,19 +227,23 @@ public:
 
         // Создание префиксной функции для шаблона
         int *prefix_function = new int[m];
+        // Определение для введенной строки
         user_input.prefixFunction(prefix_function);
 
         int i = 0, j = 0;
+        // Тут вот ищем подстроку в строке
         while (i < n)
         {
             if (str[i] == user_input[j])
             {
-                i++;
+                i++; // Сдвиг по образцу и строке, если нашли совпадения в символах
                 j++;
-                if (j == m)
+                if (j == m) // Но если длина совпала с длиной подстроки, то
                 {
-                    // Шаблон найден
+                    // Подстрока найдена!
+                    // Чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим
                     delete[] prefix_function;
+                    // Функция вернет индекс начала совпадения
                     return i - j;
                 }
             }
@@ -224,16 +255,16 @@ public:
                 }
                 else
                 {
-                    i++; // Если j == 0, то просто переходим к следующему символу в строке
+                    i++; // Если j == 0, то следующий символ в строке
                 }
             }
         }
 
-        delete[] prefix_function;
-        return -1; // Шаблон не найден
+        delete[] prefix_function; // Чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим, чистим
+        return -1;                // Шаблон не найден
     }
 
-    /// Операторы сравнения всякие ///
+    /// Операторы сравнения тута вот всякие ///
 
     /// @brief Проверка на равенство строк
     /// @param user_input С чем сравнивать
@@ -301,22 +332,6 @@ public:
         }
         return size < user_input.size;
     }
-
-    /// @brief Оператор сравнения больше аль равно
-    /// @param user_input С чем сравнивать
-    /// @return true - если сравнение прошло, иначе false
-    bool operator>=(const NewString &user_input) const
-    {
-        return !(*this < user_input);
-    }
-
-    /// @brief Оператор сравнения меньше аль равно
-    /// @param user_input С чем сравнивать
-    /// @return true - если сравнение прошло, иначе false
-    bool operator<=(const NewString &user_input) const
-    {
-        return !(*this > user_input);
-    }
 };
 
 /// @brief Тестирование методов строк
@@ -332,16 +347,16 @@ void testMethods()
     assert(str2[4] == 'd');
     char &ref = str2[3];
 
+    // Тест оператора +
+    NewString str4 = str1 + str2;
+    assert(str4 == "goooD!world");
+
     // Тест оператора =
     NewString str3;
     str3 = str1;
     assert(str3 == "goooD!");
     str3 = str2;
     assert(str3 == "world");
-
-    // Тест оператора +
-    NewString str4 = str1 + str2;
-    assert(str4 == "goooD!world");
 }
 
 /// @brief Тестирование всех сравнений (какие есть)
@@ -366,7 +381,6 @@ void testComparisons()
     assert(!(str1 == str4));
     assert(str5 == "");
 
-
     // <
     assert(str1 < str2);
     assert(!(str1 < str3));
@@ -376,28 +390,18 @@ void testComparisons()
     assert(str2 > str1);
     assert(!(str1 > str3));
     assert(str1 > str5);
-
-    // <=
-    assert(str1 <= str2);
-    assert(str1 <= str3);
-    assert(str5 <= str1);
-
-    // >=
-    assert(str2 >= str1);
-    assert(str1 >= str3);
-    assert(str1 >= str5);
 }
 
 /// @brief Тестирование KMPSearch
 void testKMPSearch()
 {
-    NewString text("This is a sample text");
-    NewString pattern1("sample");
-    NewString pattern2("hello");
+    NewString text("Exeqution's fun, u shoud try one");
+    NewString pattern1("try");
+    NewString pattern2("NO!");
 
     // Проверка для найденного шаблона
     int index1 = text.kmpSearch(pattern1);
-    assert(index1 == 10); // Шаблон "goooD!" найден на позиции 10
+    assert(index1 == 25); // Шаблон "goooD!" найден на позиции 10
 
     // Проверка для ненайденного шаблона
     int index2 = text.kmpSearch(pattern2);
@@ -405,11 +409,12 @@ void testKMPSearch()
 
     // Проверка для пустого шаблона
     NewString emptyPattern("");
+    // путсая в пустой!!!!!!!
     int index3 = text.kmpSearch(emptyPattern);
     assert(index3 == 0); // Пустой шаблон найден на позиции 0
 
     // Проверка для текста, равного шаблону
-    NewString pattern3("This is a sample text");
+    NewString pattern3("Exeqution's fun, u shoud try one");
     int index4 = text.kmpSearch(pattern3);
     assert(index4 == 0); // Шаблон равен тексту, найден на позиции 0
 
@@ -418,9 +423,22 @@ void testKMPSearch()
     int index5 = emptyText.kmpSearch(pattern1);
     assert(index5 == -1); // В пустом тексте шаблон не найден
 
+    // Проверка для пустого текста
+    NewString emptyText2("");
+    int index77 = emptyText2.kmpSearch("");
+    assert(index77 == -1); // В пустом тексте шаблон не найден
+
     // Проверка для очень длинного текста и шаблона
-    NewString longText("This is a very long text to test the KMP search algorithm...");
-    NewString longPattern("very long text to test");
+    NewString longText("This is a very long long long long long long long long long long long long long long long long text to test dat algorithm...");
+    NewString longPattern("very long long long long");
     int index6 = longText.kmpSearch(longPattern);
     assert(index6 == 10); // Длинный шаблон найден на позиции 10
+}
+
+/// @brief Тесты, но их собрали в кучу, удобно, однако
+void testClassNewString()
+{
+    testMethods();
+    testKMPSearch();
+    testComparisons();
 }
