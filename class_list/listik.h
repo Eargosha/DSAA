@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <cassert>
+#include <algorithm>
 
 using namespace std;
 
@@ -287,7 +288,6 @@ public:
         other.size = 0;
     }
 
-
     //       TO CHECK:
     // -Обьединение списков (конкатенация) = concatinateLists = average O(1 || n??)
     // -Исправил delelteInList
@@ -520,7 +520,7 @@ public:
         // Если список пуст, то кидаем ошибку
         if (head == nullptr)
         {
-            //throw out_of_range("List is empty!");
+            // throw out_of_range("List is empty!");
             return 1;
         }
 
@@ -613,11 +613,238 @@ public:
         size--;
         return 0;
     }
+
+    /// Класс итератора для двусвязного списка.
+    ///
+    /// Обеспечивает доступ к элементам списка,
+    /// поддерживает операции итерации (перемещение по списку).
+    class Iterator
+    {
+    private:
+        /// Указатель на текущий узел списка.
+        Nodule<Type> *currentNode;
+
+    public:
+        /// Конструктор, инициализирует итератор начальным узлом.
+        ///
+        /// @param node Указатель на узел, с которого начинать итерацию.
+        Iterator(Nodule<Type> *node) : currentNode(node) {}
+
+        /// Возвращает ссылку на данные текущего узла.
+        ///
+        /// @return Ссылка на данные текущего узла.
+        Type &operator*() const { return currentNode->data; }
+
+        /// Переход к следующему узлу в списке.
+        /// Может быть брошено исключение out_of_range, если итератор не имет следующего элемента
+        /// @return Ссылка на текущий объект итератора.
+        Iterator &operator++()
+        {
+            return next();
+        }
+
+        /// Возвращает ссылку на данные текущего узла.
+        ///
+        /// @return Ссылка на данные текущего узла.
+        Type &data() const 
+        {
+            return currentNode->data;
+        }
+
+        /// Переход к следующему узлу в списке.
+        /// Может быть брошено исключение out_of_range, если итератор не имет следующего элемента
+        /// @return Ссылка на текущий объект итератора.
+        Iterator &next()
+        {
+            /// Проверяем, существует ли следующий узел.
+            if (!hasNext())
+            {
+                /// Если следующий узел отсутствует, вызываем исключение.
+                throw std::out_of_range("Итератор вышел за пределы списка");
+            }
+            /// Перемещаем указатель на следующий узел.
+            currentNode = currentNode->next;
+            /// Возвращаем ссылку на текущий объект итератора.
+            return *this;
+        }
+
+        /// Проверяет, существует ли следующий узел в списке.
+        ///
+        /// @return true, если следующий узел существует, иначе false.
+        bool hasNext() const 
+        {
+            /// Возвращаем true, если currentNode не равен nullptr.
+            return currentNode != nullptr;
+        }
+
+        /// Оператор сравнения, проверяет, не совпадают ли два итератора.
+        ///
+        /// @param other Итератор, с которым сравнивается текущий.
+        /// @return true, если итераторы указывают на разные узлы, иначе false.
+        bool operator!=(const Iterator &other) const
+        {
+            /// Возвращаем true, если currentNode не равен currentNode другого итератора.
+            return currentNode != other.currentNode;
+        }
+
+        /// Сбрасывает итератор в начало списка.
+        ///
+        /// @param head Указатель на головной узел списка.
+        void reset(Nodule<Type> *head)
+        {
+            currentNode = head;
+        }
+
+        /// Оператор присваивания, копирует состояние другого итератора.
+        ///
+        /// @param other Итератор, состояние которого нужно скопировать.
+        /// @return Ссылка на текущий объект итератора.
+        Iterator &operator=(const Iterator &other)
+        {
+            /// Проверяем, не совпадают ли итераторы по адресу в памяти.
+            if (this != &other)
+            {
+                /// Если итераторы не совпадают, копируем состояние.
+                currentNode = other.currentNode;
+            }
+            /// Возвращаем ссылку на текущий объект итератора.
+            return *this;
+        }
+
+        /// Проверяет, находится ли итератор в конце списка (nullptr).
+        ///
+        /// @return true, если итератор указывает на nullptr, иначе false.
+        bool EndOfList() const
+        {
+            return currentNode == nullptr;
+        }
+    };
+
+    /// Возвращает итератор, указывающий на начало списка.
+    ///
+    /// @param head Указатель на головной узел списка.
+    /// @return Итератор, указывающий на начало списка.
+    Iterator begin() const { return Iterator(head); }
+
+    /// Возвращает итератор, указывающий на конец списка (nullptr).
+    ///
+    /// @return Итератор, указывающий на конец списка.
+    Iterator end() const { return Iterator(nullptr); }
 };
 //////////////////////////////////////////Ассерты/////////////////////////////////////
 
+/// Тест итератора
+void testListIterator()
+{
+    // Создаем двусвязный список с элементами 1, 2, 3
+    DoublyLinkedList<int> list;
+    list.addBack(1);
+    list.addBack(2);
+    list.addBack(3);
+
+    // Тестируем итератор
+    auto it = list.begin();
+
+    // Проверка начального состояния
+    assert(*list.begin() == 1);
+    assert(it != list.end());
+    assert(!it.EndOfList());
+
+    // Переход к следующему элементу
+    ++it;
+    assert(*it == 2);
+    assert(it != list.end());
+    assert(!it.EndOfList());
+
+    // Переход к следующему элементу
+    ++it;
+    assert(*it == 3);
+    assert(it != list.end());
+    assert(!it.EndOfList());
+
+    // Переход к концу списка
+    ++it;
+    assert((it != list.end()) == false);
+    assert(it.EndOfList());
+
+    // Проверка метода reset()
+    it.reset(list.get_nodule(0));
+    assert(*it == 1);
+    assert(it != list.end());
+    assert(!it.EndOfList());
+
+    // Проверка оператора присваивания
+    auto it2 = list.end();
+    it = it2;
+    assert((it != list.end()) == false);
+    assert(it.EndOfList());
+
+    // Проверка оператора !=
+    assert(it != list.begin());
+    assert(list.begin() != list.end());
+
+    // Проверка исключения при выходе за пределы списка
+    try
+    {
+        ++it;
+        assert(false); // Должно произойти исключение
+    }
+    catch (const std::out_of_range &e)
+    {
+        // Исключение должно быть поймано
+        assert(true);
+    }
+
+    // for_each: Выводит все элементы на экран
+    for_each(list.begin(), list.end(), [](int &element)
+             { cout << element << " "; });
+
+    cout << endl;
+    // For по коллекции 
+    for (int value : list) {
+        cout << value << ' ' << endl;
+    }
+
+    // For по коллекции 
+    for (auto it = list.begin(); it != list.end(); ++it) {
+        cout << *it << ' ' << endl;
+    }
+
+    cout << endl;
+
+    // // any_of: Проверяет, есть ли в списке четные числа
+    // bool hasEven = std::any_of(list.begin(), list.end(), [](int element)
+    //                            { return element % 2 == 0; });
+    // assert(hasEven);
+
+    // // all_of: Проверяет, являются ли все элементы списка четными
+    // bool allEven = std::all_of(list.begin(), list.end(), [](int element)
+    //                            { return element % 2 == 0; });
+    // assert(!allEven);
+
+    // // none_of: Проверяет, нет ли в списке четных чисел
+    // bool noEven = std::none_of(list.begin(), list.end(), [](int element)
+    //                            { return element % 2 == 0; });
+    // assert(!noEven);
+
+    // // // transform: Умножает все элементы списка на 2
+    // // std::transform(list.begin(), list.end(), list.begin(), [](int element)
+    // //                { return element * 2; });
+    // // assert(*list.begin() == 2);
+    // // assert(*list.begin().next() == 4);
+    // // assert(*list.begin().next().next() == 6);
+
+    // // copy_if: Копирует четные числа из списка в новый список
+    // DoublyLinkedList<int> evenList;
+    // std::copy_if(list.begin(), list.end(), std::back_inserter(evenList), [](int element)
+    //              { return element % 2 == 0; });
+    // assert(evenList.length() == 1);
+    // assert(*evenList.begin() == 4);
+}
+
 /// @brief тестирует AddFront
-void testAddFront() {
+void testAddFront()
+{
     DoublyLinkedList<int> list;
 
     // Тестирование добавления элемента в пустой список
@@ -635,13 +862,14 @@ void testAddFront() {
 }
 
 /// @brief тестирует все Delete
-void testDelete() {
+void testDelete()
+{
     DoublyLinkedList<int> list;
 
     // Тестирование добавления элемента в пустой список
-    assert(list.deleteBack()==1);
-    assert(list.deleteFront()==1);
-    assert(list.deleteInList(23)==1);
+    assert(list.deleteBack() == 1);
+    assert(list.deleteFront() == 1);
+    assert(list.deleteInList(23) == 1);
 
     list.addFront(1);
     assert(list.length() == 1);
@@ -652,9 +880,10 @@ void testDelete() {
 }
 
 /// @brief тестирует Find
-void testFind() {
+void testFind()
+{
     DoublyLinkedList<int> list;
-    
+
     // Добавляем элементы в список
     list.addBack(1);
     list.addBack(2);
@@ -668,7 +897,8 @@ void testFind() {
 }
 
 /// @brief тестирует Sort
-void testSort() {
+void testSort()
+{
     DoublyLinkedList<int> list;
 
     // Тестирование сортировки пустого списка
@@ -691,10 +921,9 @@ void testSort() {
 void allAsertTests()
 {
 
-                // тут некоторые методы выделил
+    // тут некоторые методы выделил
     testSort();
     testAddFront();
     testFind();
     testDelete();
-    
 }
